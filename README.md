@@ -29,7 +29,27 @@ cd Context-Engineering-Intro
 /execute-prp PRPs/your-feature-name.md
 ```
 
-## 📚 Table of Contents
+## 🎯 **新增内容：Coordinator Agent + Claude Flow 项目**
+
+本仓库现已扩展，包含了**Coordinator Agent模式**与**Claude Flow Engine**整合的完整研究和实现方案。
+
+### 📚 **完整项目文档**
+**详细文档请查看**: [`docs/`](./docs/) 目录
+
+- 📖 **使用指南**: Coordinator Agent模式和Linear MCP使用指南
+- 🏗️ **架构设计**: 三层架构分析和重构实现方案
+- 📊 **技术分析**: 功能重叠分析和优化建议
+- 🔗 **集成方案**: Claude Flow整合架构和实施指导
+- 💡 **实现示例**: 完整的代码示例和使用演示
+
+### 🚀 **快速开始（新项目）**
+1. **了解完整方案**: 阅读 [`docs/architecture/refactored-architecture-implementation.md`](./docs/architecture/refactored-architecture-implementation.md)
+2. **掌握工具使用**: 查看 [`docs/guides/linear-mcp-guide-for-llm.md`](./docs/guides/linear-mcp-guide-for-llm.md)
+3. **理解技术分析**: 参考 [`docs/analysis/overlap-analysis-and-optimization.md`](./docs/analysis/overlap-analysis-and-optimization.md)
+
+---
+
+## 📚 Table of Contents (原有内容)
 
 - [What is Context Engineering?](#what-is-context-engineering)
 - [Template Structure](#template-structure)

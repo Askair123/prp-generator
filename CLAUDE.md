@@ -57,3 +57,17 @@
 - **Never hallucinate libraries or functions** – only use known, verified Python packages.
 - **Always confirm file paths and module names** exist before referencing them in code or tests.
 - **Never delete or overwrite existing code** unless explicitly instructed to or if part of a task from `TASK.md`.
+
+### 🎯 Coordinator Pattern Specific Rules
+- **Follow Context Engineering principles** - Always provide rich context in PRPs
+- **Use one-pass implementation strategy** - Generate PRPs that enable first-try success
+- **Focus on handoff quality** - Coordinator generates config and exits cleanly
+- **Validate everything** - Include executable validation gates in all PRPs
+- **Research-driven decisions** - Base all patterns on thorough research and analysis
+
+### 🤖 Multi-Agent Coordination Guidelines
+- **Coordinator Pattern Role**: Project startup advisor that generates Claude Flow config and exits
+- **PRP Quality**: Each PRP must include context, implementation blueprint, and validation gates
+- **Claude Flow Integration**: All configurations must be compatible with Claude Flow Engine
+- **Pattern Library**: Maintain reusable coordination patterns and best practices
+- **Validation Gates**: Every PRP must include executable tests and quality checks

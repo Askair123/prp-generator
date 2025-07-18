@@ -1,0 +1,279 @@
+{
+  "hive_structure": "hierarchical",
+  "agents": [
+    {
+      "type": "architect",
+      "specialization": "api_architecture",
+      "capabilities": [
+        "system_design",
+        "architecture_planning",
+        "technology_selection",
+        "scalability_analysis",
+        "performance_optimization"
+      ],
+      "tools": [
+        "tech_stack_analyzer",
+        "python_linter",
+        "pytest_runner",
+        "system_design_tool",
+        "architecture_validator"
+      ],
+      "dependencies": []
+    },
+    {
+      "type": "backend_dev",
+      "specialization": "python_backend",
+      "capabilities": [
+        "api_development",
+        "database_integration",
+        "business_logic",
+        "error_handling",
+        "performance_optimization"
+      ],
+      "tools": [
+        "python_linter",
+        "pytest_runner",
+        "database_connector",
+        "error_handler",
+        "api_tester",
+        "code_generator"
+      ],
+      "dependencies": [
+        "architect",
+        "database_designer"
+      ]
+    },
+    {
+      "type": "frontend_dev",
+      "specialization": "frontend_dev_general",
+      "capabilities": [
+        "ui_development",
+        "user_experience",
+        "responsive_design",
+        "state_management",
+        "component_architecture"
+      ],
+      "tools": [
+        "asset_optimizer",
+        "python_linter",
+        "pytest_runner",
+        "ui_generator",
+        "component_builder",
+        "style_manager"
+      ],
+      "dependencies": [
+        "architect",
+        "backend_dev"
+      ]
+    },
+    {
+      "type": "database_designer",
+      "specialization": "postgresql_design",
+      "capabilities": [
+        "schema_design",
+        "query_optimization",
+        "data_modeling",
+        "indexing_strategy",
+        "migration_planning"
+      ],
+      "tools": [
+        "data_validator",
+        "migration_tool",
+        "query_optimizer",
+        "python_linter",
+        "pytest_runner",
+        "schema_generator"
+      ],
+      "dependencies": []
+    },
+    {
+      "type": "tester",
+      "specialization": "api_testing",
+      "capabilities": [
+        "test_planning",
+        "automated_testing",
+        "manual_testing",
+        "bug_reporting",
+        "quality_assurance"
+      ],
+      "tools": [
+        "python_linter",
+        "bug_tracker",
+        "test_generator",
+        "pytest_runner",
+        "test_runner",
+        "coverage_analyzer"
+      ],
+      "dependencies": [
+        "backend_dev",
+        "frontend_dev"
+      ]
+    },
+    {
+      "type": "devops",
+      "specialization": "aws_deployment",
+      "capabilities": [
+        "deployment_automation",
+        "infrastructure_management",
+        "monitoring_setup",
+        "ci_cd_pipeline",
+        "security_configuration"
+      ],
+      "tools": [
+        "container_manager",
+        "python_linter",
+        "pytest_runner",
+        "deployment_tool",
+        "monitoring_setup",
+        "ci_cd_manager"
+      ],
+      "dependencies": [
+        "backend_dev",
+        "frontend_dev",
+        "tester"
+      ]
+    },
+    {
+      "type": "security",
+      "specialization": "security_general",
+      "capabilities": [
+        "security_analysis",
+        "vulnerability_assessment",
+        "secure_coding",
+        "compliance_checking",
+        "threat_modeling"
+      ],
+      "tools": [
+        "security_scanner",
+        "compliance_validator",
+        "python_linter",
+        "pytest_runner",
+        "vulnerability_checker"
+      ],
+      "dependencies": [
+        "architect"
+      ]
+    }
+  ],
+  "coordination_rules": {
+    "decision_making": "central",
+    "communication_flow": "hub_and_spoke",
+    "conflict_resolution": "coordinator_decides",
+    "task_assignment": "top_down",
+    "project_type": "web_backend",
+    "complexity_level": "ComplexityLevel.MODERATE",
+    "team_size": "TeamSize.SMALL"
+  },
+  "quality_gates": [
+    {
+      "name": "code_review",
+      "type": "manual",
+      "trigger": "on_pull_request",
+      "criteria": {
+        "approvals_required": 1,
+        "blocking_issues": 0
+      },
+      "actions": [
+        "block_merge",
+        "request_changes"
+      ]
+    },
+    {
+      "name": "integration_testing",
+      "type": "automated",
+      "trigger": "on_merge",
+      "criteria": {
+        "passing_tests": "100%",
+        "response_time": "<2s"
+      },
+      "actions": [
+        "block_release",
+        "notify_team"
+      ]
+    },
+    {
+      "name": "security_scan",
+      "type": "automated",
+      "trigger": "on_deployment",
+      "criteria": {
+        "critical_vulnerabilities": 0,
+        "high_vulnerabilities": 0
+      },
+      "actions": [
+        "block_deployment",
+        "create_ticket"
+      ]
+    },
+    {
+      "name": "performance_testing",
+      "type": "automated",
+      "trigger": "on_release",
+      "criteria": {
+        "response_time": "<1s",
+        "throughput": ">100rps"
+      },
+      "actions": [
+        "block_release",
+        "optimize_code"
+      ]
+    }
+  ],
+  "memory_strategy": "session_based",
+  "integration_points": {
+    "version_control": {
+      "type": "git",
+      "provider": "github",
+      "hooks": [
+        "pre_commit",
+        "post_merge"
+      ]
+    },
+    "project_management": {
+      "type": "linear",
+      "sync_frequency": "real_time",
+      "sync_fields": [
+        "status",
+        "assignee",
+        "progress"
+      ]
+    },
+    "database": {
+      "type": "postgresql",
+      "connection_pool": true,
+      "migration_support": true
+    },
+    "deployment": {
+      "type": "aws",
+      "auto_deploy": true,
+      "rollback_support": true
+    }
+  },
+  "metadata": {
+    "generated_at": "2025-07-18T15:17:02.187379",
+    "coordinator_version": "1.0.0",
+    "project_analysis": {
+      "type": "web_backend",
+      "complexity": "ComplexityLevel.MODERATE",
+      "confidence": 0.8999999999999999
+    },
+    "pattern_selection": {
+      "name": "hierarchical",
+      "description": "Central coordinator with specialized sub-agents",
+      "agents_count": 7
+    },
+    "technical_stack": {
+      "languages": [
+        "python",
+        "typescript",
+        "ruby"
+      ],
+      "frameworks": [
+        "fastapi"
+      ],
+      "databases": [
+        "postgresql",
+        "redis"
+      ]
+    }
+  }
+}
