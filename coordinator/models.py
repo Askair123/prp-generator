@@ -158,8 +158,105 @@ class AgentConfig(BaseModel):
     dependencies: List[str] = Field(default_factory=list, description="Agent dependencies")
 
 
+# New Claude Flow standard configuration models
+class OrchestratorConfig(BaseModel):
+    """Orchestrator configuration for Claude Flow."""
+    maxConcurrentAgents: int = Field(default=10, ge=1, le=100)
+    taskQueueSize: int = Field(default=100, ge=10, le=1000)
+    healthCheckInterval: int = Field(default=30000, ge=1000)
+    shutdownTimeout: int = Field(default=30000, ge=1000)
+    agentTimeoutMs: int = Field(default=300000, ge=10000)
+    resourceAllocationStrategy: str = Field(default="balanced")
+    agentRecycling: Dict[str, Any] = Field(default_factory=dict)
+    failover: Dict[str, Any] = Field(default_factory=dict)
+
+
+class TerminalConfig(BaseModel):
+    """Terminal configuration for Claude Flow."""
+    type: str = Field(default="auto")
+    poolSize: int = Field(default=5, ge=1, le=50)
+    recycleAfter: int = Field(default=10, ge=1)
+    healthCheckInterval: int = Field(default=60000, ge=1000)
+    commandTimeout: int = Field(default=300000, ge=1000)
+    maxConcurrentCommands: int = Field(default=3, ge=1, le=10)
+    shellPreference: List[str] = Field(default=["bash", "zsh", "sh"])
+    environment: Dict[str, str] = Field(default_factory=dict)
+    security: Dict[str, Any] = Field(default_factory=dict)
+
+
+class MemoryConfig(BaseModel):
+    """Memory configuration for Claude Flow."""
+    backend: str = Field(default="hybrid")
+    cacheSizeMB: int = Field(default=100, ge=10, le=10000)
+    syncInterval: int = Field(default=5000, ge=1000)
+    conflictResolution: str = Field(default="crdt")
+    retentionDays: int = Field(default=30, ge=1, le=365)
+    compressionEnabled: bool = Field(default=True)
+    encryptionEnabled: bool = Field(default=False)
+    backup: Dict[str, Any] = Field(default_factory=dict)
+    optimization: Dict[str, Any] = Field(default_factory=dict)
+
+
+class CoordinationConfig(BaseModel):
+    """Coordination configuration for Claude Flow."""
+    maxRetries: int = Field(default=3, ge=0, le=10)
+    retryDelay: int = Field(default=1000, ge=100)
+    deadlockDetection: bool = Field(default=True)
+    resourceTimeout: int = Field(default=60000, ge=1000)
+    messageTimeout: int = Field(default=30000, ge=1000)
+    priorityLevels: int = Field(default=5, ge=1, le=10)
+    loadBalancingStrategy: str = Field(default="round-robin")
+    scheduling: Dict[str, Any] = Field(default_factory=dict)
+    communication: Dict[str, Any] = Field(default_factory=dict)
+
+
+class MCPConfig(BaseModel):
+    """MCP configuration for Claude Flow."""
+    transport: str = Field(default="stdio")
+    port: int = Field(default=3000, ge=1000, le=65535)
+    host: str = Field(default="localhost")
+    tlsEnabled: bool = Field(default=False)
+    allowedTools: List[str] = Field(default=["*"])
+    maxRequestSize: str = Field(default="10MB")
+    requestTimeout: int = Field(default=30000, ge=1000)
+    authentication: Dict[str, Any] = Field(default_factory=dict)
+    rateLimiting: Dict[str, Any] = Field(default_factory=dict)
+
+
+class LoggingConfig(BaseModel):
+    """Logging configuration for Claude Flow."""
+    level: str = Field(default="info")
+    format: str = Field(default="json")
+    destination: str = Field(default="console")
+    fileOutput: str = Field(default="logs/claude-flow.log")
+    maxFileSize: str = Field(default="10MB")
+    maxFiles: int = Field(default=5, ge=1, le=100)
+    components: Dict[str, str] = Field(default_factory=dict)
+    audit: Dict[str, Any] = Field(default_factory=dict)
+
+
 class ClaudeFlowConfig(BaseModel):
-    """Claude Flow configuration output."""
+    """Standard Claude Flow configuration."""
+    orchestrator: OrchestratorConfig = Field(default_factory=OrchestratorConfig)
+    terminal: TerminalConfig = Field(default_factory=TerminalConfig)
+    memory: MemoryConfig = Field(default_factory=MemoryConfig)
+    coordination: CoordinationConfig = Field(default_factory=CoordinationConfig)
+    mcp: MCPConfig = Field(default_factory=MCPConfig)
+    logging: LoggingConfig = Field(default_factory=LoggingConfig)
+
+    def to_json(self) -> str:
+        """Export configuration as JSON string."""
+        return json.dumps(self.dict(), indent=2)
+
+    def save_to_file(self, filepath: str) -> None:
+        """Save configuration to JSON file."""
+        with open(filepath, 'w') as f:
+            f.write(self.to_json())
+
+
+# Legacy configuration for backward compatibility
+class LegacyClaudeFlowConfig(BaseModel):
+    """Legacy Claude Flow configuration output."""
     hive_structure: str = Field(description="Hive organization structure")
     agents: List[AgentConfig] = Field(description="Agent configurations")
     coordination_rules: Dict[str, Any] = Field(description="Coordination rules and strategies")
