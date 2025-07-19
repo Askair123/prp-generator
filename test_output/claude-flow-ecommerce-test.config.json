@@ -1,0 +1,142 @@
+{
+  "orchestrator": {
+    "maxConcurrentAgents": 14,
+    "taskQueueSize": 140,
+    "healthCheckInterval": 30000,
+    "shutdownTimeout": 30000,
+    "agentTimeoutMs": 300000,
+    "resourceAllocationStrategy": "balanced",
+    "agentRecycling": {
+      "enabled": true,
+      "maxAge": "4h",
+      "maxTasks": 100
+    },
+    "failover": {
+      "enabled": false,
+      "detectionThreshold": 10000,
+      "recoveryStrategy": "restart"
+    }
+  },
+  "terminal": {
+    "type": "auto",
+    "poolSize": 20,
+    "recycleAfter": 10,
+    "healthCheckInterval": 60000,
+    "commandTimeout": 300000,
+    "maxConcurrentCommands": 3,
+    "shellPreference": [
+      "bash",
+      "zsh",
+      "sh"
+    ],
+    "environment": {
+      "PATH": "/usr/local/bin:/usr/bin:/bin",
+      "LANG": "en_US.UTF-8"
+    },
+    "security": {
+      "allowedCommands": [
+        "git.*",
+        "ls",
+        "pwd",
+        "cd",
+        "mkdir",
+        "touch",
+        "cat",
+        "grep",
+        "find"
+      ],
+      "blockedCommands": [
+        "rm -rf /",
+        "sudo rm",
+        "format.*",
+        "del /s /q",
+        "shutdown.*",
+        "reboot.*",
+        "halt.*",
+        "poweroff.*"
+      ],
+      "sandboxed": false,
+      "maxExecutionTime": 300000
+    }
+  },
+  "memory": {
+    "backend": "hybrid",
+    "cacheSizeMB": 1600,
+    "syncInterval": 5000,
+    "conflictResolution": "crdt",
+    "retentionDays": 30,
+    "compressionEnabled": true,
+    "encryptionEnabled": false,
+    "backup": {
+      "enabled": true,
+      "interval": "24h",
+      "location": "./backups",
+      "maxBackups": 5
+    },
+    "optimization": {
+      "autoCleanup": true,
+      "cleanupThreshold": "1GB",
+      "indexRebuildInterval": "48h"
+    }
+  },
+  "coordination": {
+    "maxRetries": 3,
+    "retryDelay": 1000,
+    "deadlockDetection": true,
+    "resourceTimeout": 60000,
+    "messageTimeout": 30000,
+    "priorityLevels": 5,
+    "loadBalancingStrategy": "weighted",
+    "scheduling": {
+      "algorithm": "priority-queue",
+      "fairness": true,
+      "starvationPrevention": true
+    },
+    "communication": {
+      "protocol": "async",
+      "bufferSize": 1000,
+      "compression": true
+    }
+  },
+  "mcp": {
+    "transport": "stdio",
+    "port": 3000,
+    "host": "localhost",
+    "tlsEnabled": false,
+    "allowedTools": [
+      "*"
+    ],
+    "maxRequestSize": "10MB",
+    "requestTimeout": 30000,
+    "authentication": {
+      "enabled": false,
+      "method": "token",
+      "tokenExpiry": "24h"
+    },
+    "rateLimiting": {
+      "enabled": true,
+      "requestsPerMinute": 500,
+      "burstSize": 50
+    }
+  },
+  "logging": {
+    "level": "info",
+    "format": "json",
+    "destination": "file",
+    "fileOutput": "logs/claude-flow.log",
+    "maxFileSize": "10MB",
+    "maxFiles": 5,
+    "components": {
+      "orchestrator": "info",
+      "memory": "info",
+      "terminal": "warn",
+      "mcp": "info",
+      "coordination": "info"
+    },
+    "audit": {
+      "enabled": false,
+      "includePayloads": false,
+      "retention": "30d"
+    }
+  }
+}

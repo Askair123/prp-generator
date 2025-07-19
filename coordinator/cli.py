@@ -1,7 +1,7 @@
 """
 CLI interface for Coordinator Pattern system.
 
-This module provides a command-line interface for analyzing projects
+This module provides a command-line interface for processing PRP documents
 and generating Claude Flow configurations.
 """
 
@@ -10,44 +10,53 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .project_analyzer import ProjectAnalyzer
+from .prp_parser import PRPParser
 from .pattern_library import PatternLibrary
-from .claude_flow_adapter import ClaudeFlowAdapter
+from .claude_flow_config_generator import ClaudeFlowConfigGenerator
 
 
 class CoordinatorCLI:
-    """Command-line interface for the Coordinator Pattern system."""
+    """Command-line interface for the PRP-driven Coordinator Pattern system."""
 
     def __init__(self):
         """Initialize the CLI with core components."""
-        self.analyzer = ProjectAnalyzer()
+        self.prp_parser = PRPParser()
         self.pattern_library = PatternLibrary()
-        self.adapter = ClaudeFlowAdapter()
+        self.config_generator = ClaudeFlowConfigGenerator()
 
-    async def analyze_and_generate(self, description: str, output_path: str = "output") -> bool:
+    async def process_prp(self, prp_path: str, output_path: str = "output") -> bool:
         """
-        Analyze project and generate Claude Flow configuration.
+        Process PRP document and generate Claude Flow configuration.
 
         Args:
-            description: Project description
+            prp_path: Path to PRP document
             output_path: Output directory path
 
         Returns:
             True if successful, False otherwise
         """
         try:
-            print("🔍 Analyzing project requirements...")
+            print(f"🔍 Processing PRP document: {prp_path}")
 
-            # Step 1: Analyze project
-            analysis = await self.analyzer.analyze_project(description)
+            # Step 1: Parse PRP document
+            prp_analysis = await self.prp_parser.parse_prp_file(prp_path)
 
-            print(f"✅ Project Analysis Complete:")
-            print(f"   - Type: {analysis.project_type.value}")
-            print(f"   - Complexity: {analysis.complexity_metrics.complexity_level.value}")
+            print(f"✅ PRP Analysis Complete:")
+            print(f"   - Project: {prp_analysis.name}")
+            print(f"   - Success Criteria: {len(prp_analysis.success_criteria)} items")
+            print(f"   - Agent Requirements: {', '.join(prp_analysis.agent_requirements[:5])}...")
+            print(f"   - Tech Stack: {', '.join(prp_analysis.technical_requirements.get('languages', []))}")
+
+            # Step 2: Convert to project analysis
+            print("\n🔍 Converting PRP to project analysis...")
+            analysis = await self.prp_parser.convert_prp_to_project_analysis(prp_analysis)
+
+            print(f"✅ Project Analysis:")
+            print(f"   - Type: {analysis.project_type}")
+            print(f"   - Complexity: {analysis.complexity_metrics.complexity_level}")
             print(f"   - Confidence: {analysis.confidence_score:.2f}")
-            print(f"   - Tech Stack: {', '.join(analysis.technical_requirements.languages)}")
 
-            # Step 2: Select best pattern
+            # Step 3: Select best pattern
             print("\n🎯 Selecting coordination pattern...")
             pattern_name, pattern, score = self.pattern_library.select_best_pattern(analysis)
 
@@ -55,46 +64,39 @@ class CoordinatorCLI:
             print(f"   - Description: {pattern.description}")
             print(f"   - Agents: {', '.join(pattern.agents)}")
 
-            # Step 3: Generate Claude Flow config
+            # Step 4: Generate Claude Flow config
             print("\n⚙️ Generating Claude Flow configuration...")
-            config = await self.adapter.generate_config(analysis, pattern)
+            config = await self.config_generator.generate_config(analysis, pattern)
 
-            # Step 4: Validate configuration
-            print("\n🔍 Validating configuration...")
-            validation = await self.adapter.validate_config(config)
+            # Step 5: Save configuration
+            print("\n💾 Saving configuration...")
 
-            if not validation.is_valid:
-                print(f"❌ Validation failed:")
-                for error in validation.errors:
-                    print(f"   - Error: {error}")
-                return False
+            # Create output directory
+            output_dir = Path(output_path)
+            output_dir.mkdir(exist_ok=True)
 
-            if validation.warnings:
-                print(f"⚠️ Validation warnings:")
-                for warning in validation.warnings:
-                    print(f"   - Warning: {warning}")
+            # Generate filename
+            prp_name = Path(prp_path).stem
+            config_filename = f"claude-flow-{prp_name}.config.json"
+            config_path = output_dir / config_filename
 
-            print(f"✅ Configuration valid (score: {validation.score:.2f})")
+            # Save configuration
+            config.save_to_file(str(config_path))
 
-            # Step 5: Execute handoff
-            print("\n🚀 Executing handoff to Claude Flow...")
-            handoff = await self.adapter.handoff_to_claude_flow(config, output_path)
+            print(f"✅ Configuration saved to: {config_path}")
 
-            if handoff.success:
-                print(f"✅ Handoff successful!")
-                print(f"   - Config saved to: {handoff.config_path}")
-                print(f"   - Claude Flow ready: {handoff.claude_flow_ready}")
+            # Step 6: Show usage instructions
+            print(f"\n🚀 Claude Flow Usage:")
+            print(f"   # Validate the configuration")
+            print(f"   claude-flow config validate --file {config_path}")
+            print(f"   ")
+            print(f"   # Start Claude Flow with this configuration")
+            print(f"   claude-flow --config {config_path} start")
+            print(f"   ")
+            print(f"   # Monitor system status")
+            print(f"   claude-flow status")
 
-                print(f"\n📋 Next steps:")
-                for step in handoff.next_steps:
-                    print(f"   - {step}")
-
-                return True
-            else:
-                print(f"❌ Handoff failed")
-                for step in handoff.next_steps:
-                    print(f"   - {step}")
-                return False
+            return True
 
         except Exception as e:
             print(f"❌ Error: {str(e)}")
@@ -107,24 +109,24 @@ class CoordinatorCLI:
 
         while True:
             print("\nOptions:")
-            print("1. Analyze project and generate config")
+            print("1. Process PRP document and generate config")
             print("2. List available patterns")
             print("3. Exit")
 
             choice = input("\nSelect option (1-3): ").strip()
 
             if choice == "1":
-                description = input("\nEnter project description: ").strip()
-                if description:
+                prp_path = input("\nEnter PRP document path: ").strip()
+                if prp_path and Path(prp_path).exists():
                     output_path = input("Output directory (default: output): ").strip() or "output"
                     print("\n" + "=" * 50)
-                    success = asyncio.run(self.analyze_and_generate(description, output_path))
+                    success = asyncio.run(self.process_prp(prp_path, output_path))
                     if success:
                         print("\n🎉 Configuration generated successfully!")
                     else:
                         print("\n💥 Configuration generation failed!")
                 else:
-                    print("❌ Please provide a project description")
+                    print("❌ Please provide a valid PRP document path")
 
             elif choice == "2":
                 self._list_patterns()
@@ -158,8 +160,9 @@ def main():
 
     if len(sys.argv) > 1:
         # Command line mode
-        description = " ".join(sys.argv[1:])
-        success = asyncio.run(cli.analyze_and_generate(description))
+        prp_path = sys.argv[1]
+        output_path = sys.argv[2] if len(sys.argv) > 2 else "output"
+        success = asyncio.run(cli.process_prp(prp_path, output_path))
         sys.exit(0 if success else 1)
     else:
         # Interactive mode

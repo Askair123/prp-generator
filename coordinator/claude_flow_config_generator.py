@@ -1,8 +1,9 @@
 """
-Standard Claude Flow Configuration Generator.
+Knowledge-Enhanced Claude Flow Configuration Generator.
 
 This module generates Claude Flow configurations that conform to the official
-claude-flow.config.json format and best practices.
+claude-flow.config.json format and best practices, enhanced with comprehensive
+Claude Flow knowledge base for intelligent configuration optimization.
 """
 
 from typing import Dict, List, Any
@@ -23,6 +24,15 @@ from .models import (
     TeamSize,
     QualityLevel,
 )
+from .claude_flow_knowledge_base import (
+    ClaudeFlowKnowledgeBase,
+    ProjectComplexity,
+    QualityLevel as KBQualityLevel
+)
+from .contextual_knowledge_index import (
+    ContextualKnowledgeIndex,
+    format_contextual_guidance
+)
 
 
 class ClaudeFlowConfigGenerator:
@@ -34,7 +44,9 @@ class ClaudeFlowConfigGenerator:
     """
     
     def __init__(self):
-        """Initialize the configuration generator."""
+        """Initialize the configuration generator with knowledge base and contextual index."""
+        self.knowledge_base = ClaudeFlowKnowledgeBase()
+        self.contextual_index = ContextualKnowledgeIndex()
         self._complexity_multipliers = {
             ComplexityLevel.SIMPLE: 1,
             ComplexityLevel.MODERATE: 2,
@@ -55,35 +67,130 @@ class ClaudeFlowConfigGenerator:
         pattern: CoordinationPattern,
     ) -> ClaudeFlowConfig:
         """
-        Generate complete Claude Flow configuration.
-        
+        Generate complete Claude Flow configuration with knowledge base optimization.
+
         Args:
             analysis: Project analysis results
             pattern: Selected coordination pattern
-            
+
         Returns:
-            Standard Claude Flow configuration
+            Optimized Claude Flow configuration based on best practices
         """
-        return ClaudeFlowConfig(
-            orchestrator=self._generate_orchestrator_config(analysis, pattern),
-            terminal=self._generate_terminal_config(analysis),
-            memory=self._generate_memory_config(analysis),
-            coordination=self._generate_coordination_config(pattern),
-            mcp=self._generate_mcp_config(analysis),
-            logging=self._generate_logging_config(analysis),
+        # Convert to knowledge base types
+        kb_complexity = self._convert_complexity_level(analysis.complexity_metrics.complexity_level)
+        kb_quality = self._convert_quality_level(analysis.constraints.quality_requirements)
+        team_size = self._convert_team_size(analysis.constraints.team_size)
+        project_type = analysis.project_type.value if hasattr(analysis.project_type, 'value') else str(analysis.project_type)
+
+        # Get knowledge base recommendations
+        recommendations = self.knowledge_base.get_recommendations_for_project(
+            complexity=kb_complexity,
+            quality_level=kb_quality,
+            team_size=team_size,
+            project_type=project_type
         )
+
+        return ClaudeFlowConfig(
+            orchestrator=self._generate_orchestrator_config(analysis, pattern, recommendations),
+            terminal=self._generate_terminal_config(analysis, recommendations),
+            memory=self._generate_memory_config(analysis, recommendations),
+            coordination=self._generate_coordination_config(pattern, recommendations),
+            mcp=self._generate_mcp_config(analysis, recommendations),
+            logging=self._generate_logging_config(analysis, recommendations),
+        )
+
+    def _convert_complexity_level(self, complexity: ComplexityLevel) -> ProjectComplexity:
+        """Convert ComplexityLevel to ProjectComplexity."""
+        mapping = {
+            ComplexityLevel.SIMPLE: ProjectComplexity.SIMPLE,
+            ComplexityLevel.MODERATE: ProjectComplexity.MODERATE,
+            ComplexityLevel.COMPLEX: ProjectComplexity.COMPLEX,
+            ComplexityLevel.ENTERPRISE: ProjectComplexity.ENTERPRISE
+        }
+        return mapping[complexity]
+
+    def _convert_quality_level(self, quality: QualityLevel) -> KBQualityLevel:
+        """Convert QualityLevel to KBQualityLevel."""
+        mapping = {
+            QualityLevel.PROTOTYPE: KBQualityLevel.PROTOTYPE,
+            QualityLevel.PRODUCTION: KBQualityLevel.PRODUCTION,
+            QualityLevel.ENTERPRISE: KBQualityLevel.ENTERPRISE,
+            QualityLevel.MISSION_CRITICAL: KBQualityLevel.MISSION_CRITICAL
+        }
+        return mapping.get(quality, KBQualityLevel.PRODUCTION)
+
+    def _convert_team_size(self, team_size: TeamSize) -> str:
+        """Convert TeamSize to string."""
+        mapping = {
+            TeamSize.SOLO: "solo",
+            TeamSize.SMALL: "small",
+            TeamSize.MEDIUM: "medium",
+            TeamSize.LARGE: "large"
+        }
+        return mapping[team_size]
+
+    def generate_contextual_guidance(self,
+                                   analysis: ProjectAnalysis,
+                                   pattern: CoordinationPattern) -> Dict[str, str]:
+        """
+        Generate contextual guidance for each configuration component using Context Engineering.
+
+        This provides specific, actionable documentation references and implementation
+        guidance rather than abstract recommendations.
+        """
+        project_characteristics = {
+            "complexity": analysis.complexity_metrics.complexity_level.value,
+            "quality": analysis.constraints.quality_requirements.value,
+            "team_size": analysis.constraints.team_size.value,
+            "project_type": analysis.project_type.value if hasattr(analysis.project_type, 'value') else str(analysis.project_type)
+        }
+
+        guidance = {}
+
+        # Generate guidance for each agent role
+        agent_roles = [
+            "orchestrator_config_generator",
+            "memory_config_generator",
+            "coordination_config_generator"
+        ]
+
+        for role in agent_roles:
+            task_context = self._determine_task_context(analysis, pattern)
+            contextual_guidance = self.contextual_index.get_contextual_guidance(
+                agent_role=role,
+                task_context=task_context,
+                project_characteristics=project_characteristics
+            )
+            guidance[role] = format_contextual_guidance(contextual_guidance)
+
+        return guidance
+
+    def _determine_task_context(self, analysis: ProjectAnalysis, pattern: CoordinationPattern) -> str:
+        """Determine the primary task context based on analysis."""
+        if analysis.complexity_metrics.complexity_level in [ComplexityLevel.COMPLEX, ComplexityLevel.ENTERPRISE]:
+            return "high_performance_setup"
+        elif analysis.constraints.quality_requirements in [QualityLevel.PRODUCTION, QualityLevel.ENTERPRISE]:
+            return "production_optimization"
+        elif len(pattern.agents) > 5:
+            return "multi_agent_coordination"
+        else:
+            return "standard_setup"
     
     def _generate_orchestrator_config(
-        self, analysis: ProjectAnalysis, pattern: CoordinationPattern
+        self, analysis: ProjectAnalysis, pattern: CoordinationPattern, recommendations: Dict[str, Any]
     ) -> OrchestratorConfig:
-        """Generate orchestrator configuration."""
-        
-        # Calculate optimal agent count based on complexity and team size
-        base_agents = len(pattern.agents)
-        complexity_factor = self._complexity_multipliers[analysis.complexity_metrics.complexity_level]
-        team_factor = self._team_size_multipliers[analysis.constraints.team_size]
-        
-        max_concurrent = min(base_agents * complexity_factor, 50)  # Cap at 50
+        """Generate orchestrator configuration with knowledge base recommendations."""
+
+        # Use knowledge base recommendations for optimal configuration
+        orchestrator_rec = recommendations.get("orchestrator", {})
+
+        # Get recommended agent count or calculate based on pattern and complexity
+        max_concurrent = orchestrator_rec.get("maxConcurrentAgents")
+        if not max_concurrent:
+            base_agents = len(pattern.agents)
+            complexity_factor = self._complexity_multipliers[analysis.complexity_metrics.complexity_level]
+            max_concurrent = min(base_agents * complexity_factor, 50)  # Cap at 50
+
         task_queue_size = max_concurrent * 10
         
         # Select resource allocation strategy
@@ -114,7 +221,7 @@ class ClaudeFlowConfigGenerator:
             failover=failover,
         )
     
-    def _generate_terminal_config(self, analysis: ProjectAnalysis) -> TerminalConfig:
+    def _generate_terminal_config(self, analysis: ProjectAnalysis, recommendations: Dict[str, Any] = None) -> TerminalConfig:
         """Generate terminal configuration."""
         
         # Adjust pool size based on team size and complexity
@@ -145,7 +252,7 @@ class ClaudeFlowConfigGenerator:
             security=security,
         )
     
-    def _generate_memory_config(self, analysis: ProjectAnalysis) -> MemoryConfig:
+    def _generate_memory_config(self, analysis: ProjectAnalysis, recommendations: Dict[str, Any] = None) -> MemoryConfig:
         """Generate memory configuration."""
         
         # Select backend based on project type
@@ -201,7 +308,7 @@ class ClaudeFlowConfigGenerator:
             optimization=optimization,
         )
     
-    def _generate_coordination_config(self, pattern: CoordinationPattern) -> CoordinationConfig:
+    def _generate_coordination_config(self, pattern: CoordinationPattern, recommendations: Dict[str, Any] = None) -> CoordinationConfig:
         """Generate coordination configuration."""
         
         # Pattern-specific configurations
@@ -287,7 +394,7 @@ class ClaudeFlowConfigGenerator:
             communication=pattern_specific["communication"],
         )
 
-    def _generate_mcp_config(self, analysis: ProjectAnalysis) -> MCPConfig:
+    def _generate_mcp_config(self, analysis: ProjectAnalysis, recommendations: Dict[str, Any] = None) -> MCPConfig:
         """Generate MCP configuration."""
 
         # Generate allowed tools based on tech stack
@@ -347,7 +454,7 @@ class ClaudeFlowConfigGenerator:
             rateLimiting=rate_limiting,
         )
 
-    def _generate_logging_config(self, analysis: ProjectAnalysis) -> LoggingConfig:
+    def _generate_logging_config(self, analysis: ProjectAnalysis, recommendations: Dict[str, Any] = None) -> LoggingConfig:
         """Generate logging configuration."""
 
         # Set log level based on quality requirements
