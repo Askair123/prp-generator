@@ -34,9 +34,9 @@ def setup_clone(target_dir):
     """克隆复制方式设置"""
     print_info("使用克隆复制方式设置...")
 
-    # 克隆仓库
+    # 克隆仓库（指定main分支）
     print_info("克隆PRP生成工具仓库...")
-    success, stdout, stderr = run_command("git clone https://github.com/Askair123/prp-generator.git prp-temp")
+    success, stdout, stderr = run_command("git clone -b main https://github.com/Askair123/prp-generator.git prp-temp")
 
     if not success:
         print_error(f"克隆失败: {stderr}")
