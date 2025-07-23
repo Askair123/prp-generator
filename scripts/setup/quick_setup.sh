@@ -82,7 +82,7 @@ main_setup() {
     
     # 下载设置脚本
     print_info "下载设置脚本..."
-    curl -sSL https://raw.githubusercontent.com/Askair123/prp-generator/main/setup_from_github.py -o setup_from_github.py
+    curl -sSL https://raw.githubusercontent.com/Askair123/prp-generator/main/scripts/setup/setup_from_github.py -o setup_from_github.py
     
     # 运行设置
     print_info "运行设置脚本..."
@@ -95,7 +95,7 @@ main_setup() {
     echo
     print_info "下一步："
     print_info "1. 编辑 INITIAL.md 文件"
-    print_info "2. 运行: $PYTHON_CMD -m coordinator.initial_to_prp_cli generate INITIAL.md"
+    print_info "2. 运行: $PYTHON_CMD src/coordinator/initial_to_prp_cli.py generate INITIAL.md"
     print_info "3. 使用生成的PRP文件"
     echo
     print_info "查看 USAGE_GUIDE.md 获取详细指南"
