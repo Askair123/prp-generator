@@ -80,10 +80,15 @@ class SetupVerifier:
     def check_python_module(self, module_name: str) -> bool:
         """检查Python模块是否可导入"""
         try:
-            # 设置Python路径
+            # 设置Python路径，包含src目录
             env = os.environ.copy()
-            env['PYTHONPATH'] = str(self.project_path)
-            
+            src_path = str(self.project_path / "src")
+            current_pythonpath = env.get('PYTHONPATH', '')
+            if current_pythonpath:
+                env['PYTHONPATH'] = f"{src_path}:{current_pythonpath}"
+            else:
+                env['PYTHONPATH'] = src_path
+
             result = subprocess.run(
                 [sys.executable, "-c", f"import {module_name}"],
                 capture_output=True,
@@ -185,7 +190,7 @@ class SetupVerifier:
             
             # 运行PRP生成命令
             result = subprocess.run(
-                [sys.executable, "-m", "coordinator.initial_to_prp_cli", "generate", "INITIAL.md", "--no-research"],
+                [sys.executable, "src/coordinator/initial_to_prp_cli.py", "generate", "INITIAL.md", "--no-research"],
                 cwd=self.project_path,
                 capture_output=True,
                 text=True,
@@ -240,15 +245,17 @@ class SetupVerifier:
         # 1. 检查核心文件和目录
         print_info("1. 检查核心文件和目录...")
         core_checks = [
-            ("coordinator", "核心模块目录", "dir"),
-            ("coordinator/__init__.py", "模块初始化文件", "file"),
-            ("coordinator/initial_parser.py", "INITIAL.md解析器", "file"),
-            ("coordinator/initial_to_prp_generator.py", "PRP生成器", "file"),
-            ("coordinator/initial_to_prp_cli.py", "CLI工具", "file"),
-            ("PRPs", "PRP输出目录", "dir"),
-            ("PRPs/templates", "PRP模板目录", "dir"),
-            ("PRPs/templates/prp_base.md", "PRP基础模板", "file"),
+            ("src/coordinator", "核心模块目录", "dir"),
+            ("src/coordinator/__init__.py", "模块初始化文件", "file"),
+            ("src/coordinator/initial_parser.py", "INITIAL.md解析器", "file"),
+            ("src/coordinator/initial_to_prp_generator.py", "PRP生成器", "file"),
+            ("src/coordinator/initial_to_prp_cli.py", "CLI工具", "file"),
+            ("templates", "模板目录", "dir"),
+            ("templates/prp_base.md", "PRP基础模板", "file"),
             ("INITIAL.md", "功能需求文件", "file"),
+            ("examples", "示例目录", "dir"),
+            ("docs", "文档目录", "dir"),
+            ("scripts", "脚本目录", "dir"),
         ]
         
         core_success = True
@@ -264,6 +271,8 @@ class SetupVerifier:
         
         # 2. 检查Python模块导入
         print_info("2. 检查Python模块导入...")
+        # 添加src目录到Python路径
+        sys.path.insert(0, str(self.project_path / "src"))
         module_checks = [
             "coordinator",
             "coordinator.initial_parser",
@@ -281,8 +290,8 @@ class SetupVerifier:
         # 3. 检查CLI命令
         print_info("3. 检查CLI命令...")
         cli_commands = [
-            ([sys.executable, "-m", "coordinator.initial_to_prp_cli", "--help"], "CLI帮助命令"),
-            ([sys.executable, "-m", "coordinator.initial_to_prp_cli", "validate", "INITIAL.md"], "INITIAL.md验证命令"),
+            ([sys.executable, "src/coordinator/initial_to_prp_cli.py", "--help"], "CLI帮助命令"),
+            ([sys.executable, "src/coordinator/initial_to_prp_cli.py", "validate", "INITIAL.md"], "INITIAL.md验证命令"),
         ]
         
         cli_success = True

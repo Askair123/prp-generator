@@ -11,7 +11,10 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from .initial_to_prp_generator import InitialToPRPGenerator, PRPGenerationConfig
+# Add the parent directory to sys.path to enable imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from coordinator.initial_to_prp_generator import InitialToPRPGenerator, PRPGenerationConfig
 
 
 class InitialToPRPCLI:
